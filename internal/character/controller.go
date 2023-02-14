@@ -18,15 +18,9 @@ type controller struct {
 }
 
 func setupController() Controller {
-	client := ricknmorty.New("https://rickandmortyapi.com/api")
+	client := ricknmorty.New()
 
-	// cacheProxy := NewRickNMortyClientCacheProxy(
-	// 	client,
-	// 	cache.NewInMemCache[ricknmorty.PaginatedCharacters](10*time.Second, 10*time.Second))
-
-	cacheProxy := NewRickNMortyClientCacheProxy(
-		client,
-		cache.NewRedisCache[ricknmorty.PaginatedCharacters](10*time.Second))
+	cacheProxy := NewRickNMortyClientCacheProxy(client, cache.New[ricknmorty.PaginatedCharacters](10*time.Second))
 
 	alertDecorator := NewRickNMortyClientAlertDecorator(cacheProxy)
 
