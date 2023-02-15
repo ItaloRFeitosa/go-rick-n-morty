@@ -11,10 +11,10 @@ import (
 type RickNMortyClientCacheProxy struct {
 	ricknmorty.Client
 
-	cache *cache.InMemCache[ricknmorty.PaginatedCharacters]
+	cache cache.Cache[ricknmorty.PaginatedCharacters]
 }
 
-func NewRickNMortyClientCacheProxy(client ricknmorty.Client, cache *cache.InMemCache[ricknmorty.PaginatedCharacters]) ricknmorty.Client {
+func NewRickNMortyClientCacheProxy(client ricknmorty.Client, cache cache.Cache[ricknmorty.PaginatedCharacters]) ricknmorty.Client {
 	return &RickNMortyClientCacheProxy{client, cache}
 }
 

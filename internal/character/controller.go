@@ -19,12 +19,21 @@ type controller struct {
 
 func setupController() Controller {
 	client := ricknmorty.New("https://rickandmortyapi.com/api")
+
+	// cacheProxy := NewRickNMortyClientCacheProxy(
+	// 	client,
+	// 	cache.NewInMemCache[ricknmorty.PaginatedCharacters](10*time.Second, 10*time.Second))
+
 	cacheProxy := NewRickNMortyClientCacheProxy(
 		client,
-		cache.NewInMemCache[ricknmorty.PaginatedCharacters](10*time.Second, 10*time.Second))
+		cache.NewRedisCache[ricknmorty.PaginatedCharacters](10*time.Second))
+
+	alertDecorator := NewRickNMortyClientAlertDecorator(cacheProxy)
+
+	logDecorator := NewRickNMortyClientLogDecorator(alertDecorator)
 
 	return &controller{
-		ricknmorty: cacheProxy,
+		ricknmorty: logDecorator,
 	}
 }
 
@@ -40,6 +49,7 @@ func (ctl *controller) SearchCharacters(c *fiber.Ctx) error {
 	}
 
 	chars, err = ctl.ricknmorty.FilterCharacters(c.UserContext(), filter)
+
 	if err != nil {
 		return fiber.NewError(http.StatusInternalServerError, err.Error())
 	}
