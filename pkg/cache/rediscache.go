@@ -3,12 +3,13 @@ package cache
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"time"
 
+	"github.com/italorfeitosa/go-rick-n-morty/pkg/redisclient"
 	"github.com/redis/go-redis/v9"
-	"github.com/spf13/viper"
 )
+
+// Adapter Pattern Example
 
 type RedisCache[T any] struct {
 	client         *redis.Client
@@ -16,19 +17,10 @@ type RedisCache[T any] struct {
 }
 
 func NewRedisCache[T any](expirationTime time.Duration) *RedisCache[T] {
-	opt, err := redis.ParseURL(viper.GetString("REDIS_URL"))
-	if err != nil {
-		log.Fatal(err)
+	return &RedisCache[T]{
+		client:         redisclient.Client(),
+		expirationTime: expirationTime,
 	}
-
-	client := redis.NewClient(opt)
-
-	statuscmd := client.Ping(context.Background())
-	if err := statuscmd.Err(); err != nil {
-		log.Fatal(err)
-	}
-
-	return &RedisCache[T]{client, expirationTime}
 }
 
 func (rc *RedisCache[T]) Get(ctx context.Context, key string) (T, error) {

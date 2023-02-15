@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -19,5 +20,5 @@ func main() {
 
 	character.Setup(app)
 
-	app.Listen(":8080")
+	app.Listen(fmt.Sprintf(":%s", viper.GetString("PORT")))
 }

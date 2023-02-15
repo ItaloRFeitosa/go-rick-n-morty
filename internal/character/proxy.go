@@ -8,6 +8,8 @@ import (
 	"github.com/italorfeitosa/go-rick-n-morty/pkg/ricknmorty"
 )
 
+// Proxy Pattern Example
+
 type RickNMortyClientCacheProxy struct {
 	ricknmorty.Client
 

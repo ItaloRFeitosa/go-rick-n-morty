@@ -8,12 +8,14 @@ import (
 	gocache "github.com/patrickmn/go-cache"
 )
 
+// Adapter Pattern Example
+
 type InMemCache[T any] struct {
 	gocache *gocache.Cache
 }
 
-func NewInMemCache[T any](defaultExp, cleanUpExp time.Duration) *InMemCache[T] {
-	return &InMemCache[T]{gocache.New(defaultExp, cleanUpExp)}
+func NewInMemCache[T any](defaultExp time.Duration) *InMemCache[T] {
+	return &InMemCache[T]{gocache.New(defaultExp, defaultExp)}
 }
 
 func (c *InMemCache[T]) Set(ctx context.Context, key string, value T) error {

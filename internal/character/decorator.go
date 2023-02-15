@@ -6,7 +6,10 @@ import (
 
 	"github.com/go-resty/resty/v2"
 	"github.com/italorfeitosa/go-rick-n-morty/pkg/ricknmorty"
+	"github.com/spf13/viper"
 )
+
+// Decorator Pattern Examples
 
 type RickNMortyClientLogDecorator struct {
 	ricknmorty.Client
@@ -35,7 +38,7 @@ type RickNMortyClientAlertDecorator struct {
 
 func NewRickNMortyClientAlertDecorator(client ricknmorty.Client) ricknmorty.Client {
 	restyClient := resty.New()
-	restyClient.SetBaseURL("https://webhook.site/a55e7c05-a9fc-429a-ab67-e7da86715683")
+	restyClient.SetBaseURL(viper.GetString("ALERT_URL"))
 	return &RickNMortyClientAlertDecorator{client, restyClient}
 }
 
