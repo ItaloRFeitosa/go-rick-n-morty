@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/italorfeitosa/go-rick-n-morty/internal/character"
+	"github.com/italorfeitosa/go-rick-n-morty/internal/di"
+	"github.com/italorfeitosa/go-rick-n-morty/internal/routerv1"
 	"github.com/italorfeitosa/go-rick-n-morty/pkg/process"
 	"github.com/spf13/viper"
 )
@@ -19,14 +19,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	app := fiber.New()
+	c := di.NewContainer()
 
-	character.Setup(app)
+	routerv1.Characters(c)
 
-	go app.Listen(fmt.Sprintf(":%s", viper.GetString("PORT")))
+	go c.FiberApp.Listen(fmt.Sprintf(":%s", viper.GetString("PORT")))
 
 	process.GracefulShutdown(func(ctx context.Context) {
-		err := app.Server().Shutdown()
+		err := c.FiberApp.Server().Shutdown()
 		if err != nil {
 			log.Println("error on shutdown server: ", err)
 		}
