@@ -2,10 +2,8 @@ package character
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/italorfeitosa/go-rick-n-morty/pkg/cache"
 	"github.com/italorfeitosa/go-rick-n-morty/pkg/ricknmorty"
 )
 
@@ -17,18 +15,8 @@ type controller struct {
 	ricknmorty ricknmorty.Client
 }
 
-func setupController() Controller {
-	client := ricknmorty.New()
-
-	cacheProxy := NewRickNMortyClientCacheProxy(client, cache.New[ricknmorty.PaginatedCharacters](10*time.Second))
-
-	alertDecorator := NewRickNMortyClientAlertDecorator(cacheProxy)
-
-	logDecorator := NewRickNMortyClientLogDecorator(alertDecorator)
-
-	return &controller{
-		ricknmorty: logDecorator,
-	}
+func NewController(r ricknmorty.Client) *controller {
+	return &controller{r}
 }
 
 func (ctl *controller) SearchCharacters(c *fiber.Ctx) error {
