@@ -32,11 +32,11 @@ func (c *client) FilterCharacters(ctx context.Context, filter FilterCharactersQu
 		Get("/character")
 
 	if err != nil {
-		return paginatedCharacters, err
+		return paginatedCharacters, fmt.Errorf("error on filter characters: %s: %w", err, ErrUnknown)
 	}
 
 	if res.IsError() {
-		return paginatedCharacters, fmt.Errorf("error on filter characters; status code %d; body %s", res.StatusCode(), res.String())
+		return paginatedCharacters, fmt.Errorf("error on filter characters; status code %d; body %s: %w", res.StatusCode(), res.String(), ErrResponse)
 	}
 
 	return *res.Result().(*PaginatedCharacters), nil

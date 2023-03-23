@@ -4,9 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/go-resty/resty/v2"
 	"github.com/italorfeitosa/go-rick-n-morty/pkg/ricknmorty"
-	"github.com/spf13/viper"
 )
 
 // Decorator Pattern Examples
@@ -33,21 +31,56 @@ func (c *RickNMortyClientLogDecorator) FilterCharacters(ctx context.Context, fil
 type RickNMortyClientAlertDecorator struct {
 	ricknmorty.Client
 
-	notificationClient *resty.Client
+	alertManager  RickNMortyAlertManager
+	alertManager2 RickNMortyAlertManager
 }
 
-func NewRickNMortyClientAlertDecorator(client ricknmorty.Client) ricknmorty.Client {
-	restyClient := resty.New()
-	restyClient.SetBaseURL(viper.GetString("ALERT_URL"))
-	return &RickNMortyClientAlertDecorator{client, restyClient}
+func NewRickNMortyClientAlertDecorator(
+	client ricknmorty.Client,
+	alertManager RickNMortyAlertManager,
+	alertManager2 RickNMortyAlertManager,
+) ricknmorty.Client {
+
+	return &RickNMortyClientAlertDecorator{client, alertManager, alertManager2}
 }
 
 func (c *RickNMortyClientAlertDecorator) FilterCharacters(ctx context.Context, filter ricknmorty.FilterCharactersQuery) (ricknmorty.PaginatedCharacters, error) {
 	chars, err := c.Client.FilterCharacters(ctx, filter)
 
 	if err != nil {
-		c.notificationClient.R().SetBody(map[string]string{"error": err.Error()}).Post("/")
+		go c.alertManager.SendAlert(ctx, err)
+		go c.alertManager2.SendAlert(ctx, err)
 		return chars, err
+	}
+
+	return chars, nil
+}
+
+type RickNMortyClientErrorDecorator struct {
+	ricknmorty.Client
+}
+
+func NewRickNMortyClientErrorDecorator(client ricknmorty.Client) ricknmorty.Client {
+	return &RickNMortyClientErrorDecorator{client}
+}
+
+func (c *RickNMortyClientErrorDecorator) FilterCharacters(ctx context.Context, filter ricknmorty.FilterCharactersQuery) (ricknmorty.PaginatedCharacters, error) {
+	var (
+		chars ricknmorty.PaginatedCharacters
+		err   error
+	)
+
+	if filter.Page < 0 {
+		return chars, ricknmorty.ErrInvalidParams
+	}
+
+	chars, err = c.Client.FilterCharacters(ctx, filter)
+	if err != nil {
+		return chars, err
+	}
+
+	if len(chars.Results) == 0 {
+		return chars, ricknmorty.ErrNotFound
 	}
 
 	return chars, nil
